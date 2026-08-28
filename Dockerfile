@@ -1,5 +1,8 @@
 FROM node:20-slim
 
+# Prisma-র জন্য OpenSSL দরকার (Neon-এর মতো SSL-required ডেটাবেসের সাথে কানেক্ট করতে)
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY package*.json ./
