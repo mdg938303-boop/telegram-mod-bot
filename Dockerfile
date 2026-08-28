@@ -15,5 +15,5 @@ COPY src ./src
 
 EXPOSE 3000
 
-# প্রতিবার স্টার্টে migration চালিয়ে নেয় (ssh ছাড়াই), তারপর অ্যাপ চালু করে
-CMD ["sh", "-c", "npx prisma migrate deploy && node src/index.js"]
+# প্রতিবার স্টার্টে schema ডেটাবেসে সিঙ্ক করে নেয় (migration file ছাড়াই, ssh ছাড়াই), তারপর অ্যাপ চালু করে
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node src/index.js"]
