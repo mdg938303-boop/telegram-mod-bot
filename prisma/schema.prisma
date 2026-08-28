@@ -1,0 +1,93 @@
+// Prisma schema — Neon (PostgreSQL)
+// docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// একটা টেলিগ্রাম গ্রুপ
+model Group {
+  id            Int        @id @default(autoincrement())
+  telegramId    BigInt     @unique // group chat id
+  title         String?
+  aiEnabled     Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  keywords      Keyword[]
+  users         GroupUser[]
+  warnings      Warning[]
+  faqEntries    FaqEntry[]
+}
+
+// কিওয়ার্ড রুল — reply বা action (mute/ban/warn)
+model Keyword {
+  id          Int      @id @default(autoincrement())
+  group       Group    @relation(fields: [groupId], references: [id])
+  groupId     Int
+  keyword     String   // ম্যাচ করার শব্দ/ফ্রেজ
+  matchType   String   @default("contains") // contains | exact
+  actionType  String   // reply | warn | mute | ban
+  responseText String? // reply এর জন্য টেক্সট
+  muteMinutes Int?     // mute হলে কত মিনিট
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([groupId])
+}
+
+// প্রতিটা গ্রুপে প্রতিটা ইউজারের অবস্থা
+model GroupUser {
+  id            Int       @id @default(autoincrement())
+  group         Group     @relation(fields: [groupId], references: [id])
+  groupId       Int
+  telegramId    BigInt
+  username      String?
+  firstName     String?
+  warningCount  Int       @default(0)
+  isMuted       Boolean   @default(false)
+  mutedUntil    DateTime?
+  isBanned      Boolean   @default(false)
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([groupId, telegramId])
+  @@index([groupId])
+}
+
+// ওয়ার্নিং/অ্যাকশন হিস্টোরি লগ
+model Warning {
+  id          Int      @id @default(autoincrement())
+  group       Group    @relation(fields: [groupId], references: [id])
+  groupId     Int
+  telegramId  BigInt
+  username    String?
+  reason      String
+  actionType  String   // warn | mute | ban
+  createdAt   DateTime @default(now())
+
+  @@index([groupId])
+}
+
+// AI Q&A এর জন্য গ্রুপ-স্পেসিফিক নলেজ বেস
+model FaqEntry {
+  id        Int      @id @default(autoincrement())
+  group     Group    @relation(fields: [groupId], references: [id])
+  groupId   Int
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+
+  @@index([groupId])
+}
+
+// ওয়েব ড্যাশবোর্ড অ্যাডমিন লগইন
+model Admin {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}

@@ -1,0 +1,20 @@
+# app নাম চেঞ্জ করুন — fly launch করার সময় এটা অটো জেনারেট হয়
+app = "your-mod-bot-name"
+primary_region = "sin" # Singapore — বাংলাদেশ থেকে সবচেয়ে কাছের রিজিয়ন
+
+[build]
+
+[env]
+  PORT = "3000"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false   # বট যাতে স্লিপে না যায়
+  auto_start_machines = true
+  min_machines_running = 1     # সবসময় অন্তত ১টা মেশিন চালু থাকবে (ফ্রি অ্যালাউন্সের মধ্যে)
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
